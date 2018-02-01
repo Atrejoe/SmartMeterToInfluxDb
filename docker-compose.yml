@@ -1,0 +1,8 @@
+version: '3'
+
+services:
+  smartmetertoinfluxdb:
+    image: smartmetertoinfluxdb
+    build:
+      context: .
+      dockerfile: SmartMeterToInfluxDb/Dockerfile
