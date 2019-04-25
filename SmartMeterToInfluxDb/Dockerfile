@@ -1,9 +1,10 @@
-FROM microsoft/dotnet:2.0-runtime AS base
+FROM microsoft/dotnet:2.2-runtime AS base
 WORKDIR /app
 
-FROM microsoft/dotnet:2.0-sdk AS build
+FROM microsoft/dotnet:2.2-sdk AS build
 WORKDIR /src
 COPY *.sln ./
+COPY *.dcproj ./
 COPY SmartMeterToInfluxDb/SmartMeterToInfluxDb.csproj SmartMeterToInfluxDb/
 RUN dotnet restore
 COPY . .
@@ -16,4 +17,5 @@ RUN dotnet publish -c Release -o /app
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app .
+
 ENTRYPOINT ["dotnet", "SmartMeterToInfluxDb.dll"]

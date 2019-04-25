@@ -1,17 +1,20 @@
-FROM microsoft/dotnet:2.0-runtime AS base
+FROM microsoft/dotnet:2.2-runtime AS base
 WORKDIR /app
 
-FROM microsoft/dotnet:2.0-sdk AS build
+FROM microsoft/dotnet:2.2-sdk AS build
 WORKDIR /src
 COPY *.sln ./
+#COPY docker-compose.dcproj ./
 COPY SmartMeterToInfluxDb/SmartMeterToInfluxDb.csproj SmartMeterToInfluxDb/
-RUN dotnet restore
+RUN dotnet restore SmartMeterToInfluxDb/SmartMeterToInfluxDb.csproj
 COPY . .
+#COPY *.dcproj ./
 WORKDIR /src/SmartMeterToInfluxDb
-RUN dotnet build -c Release -o /app
+#COPY *.dcproj ./
+RUN dotnet build SmartMeterToInfluxDb.csproj -c Release -o /app
 
 FROM build AS publish
-RUN dotnet publish -c Release -o /app
+RUN dotnet publish SmartMeterToInfluxDb.csproj -c Release -o /app
 
 FROM base AS final
 WORKDIR /app

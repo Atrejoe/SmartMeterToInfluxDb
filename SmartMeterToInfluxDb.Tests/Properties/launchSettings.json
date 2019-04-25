@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "SmartMeterToInfluxDb.Tests": {
+      "commandName": "Project",
+      "commandLineArgs": "InfluxDbDatabaseName param",
+      "environmentVariables": {
+        "InfluxDbDatabaseName": "Test"
+      }
+    }
+  }
+}

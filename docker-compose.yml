@@ -1,8 +1,15 @@
-version: '3'
+version: '3.4'
 
 services:
   smartmetertoinfluxdb:
-    image: smartmetertoinfluxdb
+    image: smartmetertoinfluxdb:dev
     build:
       context: .
       dockerfile: SmartMeterToInfluxDb/Dockerfile
+    environment:
+      - SerialPortName=/dev/ttyUSB0
+      - BaudRate=115200
+      - InfluxDbUserName=[InfluxDbUserName]
+      - InfluxDbPassword=[InfluxDbPassword]
+      - InfluxDbServerAddress=http://127.0.0.1:8086
+      - InfluxDbDatabaseName=SmartMeterToInfluxDb

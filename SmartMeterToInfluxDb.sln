@@ -1,11 +1,20 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27130.2020
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.28721.148
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartMeterToInfluxDb", "SmartMeterToInfluxDb\SmartMeterToInfluxDb.csproj", "{E3158F91-587E-4A46-97DD-0B70513E652D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SmartMeterToInfluxDb", "SmartMeterToInfluxDb\SmartMeterToInfluxDb.csproj", "{E3158F91-587E-4A46-97DD-0B70513E652D}"
 EndProject
 Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{3AD358E9-2387-48C7-B618-22E3D9CFB7F0}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SmartMeterToInfluxDb.Tests", "SmartMeterToInfluxDb.Tests\SmartMeterToInfluxDb.Tests.csproj", "{ABBA72C7-6CDC-4B1C-A0F8-CE4A621435D8}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{EB668D1A-F38B-483F-BC7C-1D1CAF9CCC5F}"
+	ProjectSection(SolutionItems) = preProject
+		dockerize.bat = dockerize.bat
+		dockerize.sh = dockerize.sh
+		README.md = README.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +30,10 @@ Global
 		{3AD358E9-2387-48C7-B618-22E3D9CFB7F0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3AD358E9-2387-48C7-B618-22E3D9CFB7F0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3AD358E9-2387-48C7-B618-22E3D9CFB7F0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ABBA72C7-6CDC-4B1C-A0F8-CE4A621435D8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ABBA72C7-6CDC-4B1C-A0F8-CE4A621435D8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ABBA72C7-6CDC-4B1C-A0F8-CE4A621435D8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ABBA72C7-6CDC-4B1C-A0F8-CE4A621435D8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
