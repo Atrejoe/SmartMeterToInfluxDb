@@ -18,7 +18,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       # The project targets netcoreapp2.1, whose SDK only ships as an old
       # container image. That image's glibc is too old for the Node runtime
