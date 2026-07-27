@@ -51,6 +51,9 @@ jobs:
           name: Test Report
           path: '**/TestResults/*.trx'
           reporter: dotnet-trx
+          # Publish as a check run on the PR (visible in the Checks tab)
+          # instead of only writing to the Actions run summary page.
+          use-actions-summary: false
 
       - name: Upload test results
         if: always()
