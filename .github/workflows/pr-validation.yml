@@ -11,40 +11,41 @@ jobs:
   build-and-test:
     name: Build & Test
     runs-on: ubuntu-latest
-    # The project targets netcoreapp2.1, which no longer installs cleanly on
-    # current runner images. Running inside the official .NET Core 2.1 SDK
-    # container gives a matching, reproducible toolchain.
-    container:
-      image: mcr.microsoft.com/dotnet/core/sdk:2.1
-
-    env:
-      DOTNET_CLI_TELEMETRY_OPTOUT: 'true'
-      DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 'true'
-      DOTNET_NOLOGO: 'true'
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # The project targets netcoreapp2.1, which no longer installs cleanly on
+      # current runner images. The matching SDK is only available as an old
+      # container image whose glibc is too old to run the Node runtime that
+      # GitHub's JavaScript actions (checkout, upload-artifact) now require.
+      # So the JS actions run on the host, and only the dotnet commands run
+      # inside the .NET Core 2.1 SDK container.
+      #
       # The .sln references docker-compose.dcproj, which the dotnet CLI cannot
-      # build on Linux, so build the individual projects instead.
-      - name: Restore
+      # build on Linux, so the individual projects are built instead.
+      - name: Build & test (.NET Core 2.1 container)
         run: |
-          dotnet restore SmartMeterToInfluxDb/SmartMeterToInfluxDb.csproj
-          dotnet restore SmartMeterToInfluxDb.Tests/SmartMeterToInfluxDb.Tests.csproj
-
-      - name: Build
-        run: |
-          dotnet build SmartMeterToInfluxDb/SmartMeterToInfluxDb.csproj --configuration Release --no-restore
-          dotnet build SmartMeterToInfluxDb.Tests/SmartMeterToInfluxDb.Tests.csproj --configuration Release --no-restore
-
-      - name: Test
-        run: >
-          dotnet test SmartMeterToInfluxDb.Tests/SmartMeterToInfluxDb.Tests.csproj
-          --configuration Release
-          --no-build
-          --logger "trx;LogFileName=test-results.trx"
-          --results-directory ./TestResults
+          docker run --rm \
+            -v "${{ github.workspace }}":/src \
+            -w /src \
+            -e DOTNET_CLI_TELEMETRY_OPTOUT=true \
+            -e DOTNET_SKIP_FIRST_TIME_EXPERIENCE=true \
+            -e DOTNET_NOLOGO=true \
+            mcr.microsoft.com/dotnet/core/sdk:2.1 \
+            bash -c '
+              set -euo pipefail
+              dotnet restore SmartMeterToInfluxDb/SmartMeterToInfluxDb.csproj
+              dotnet restore SmartMeterToInfluxDb.Tests/SmartMeterToInfluxDb.Tests.csproj
+              dotnet build SmartMeterToInfluxDb/SmartMeterToInfluxDb.csproj --configuration Release --no-restore
+              dotnet build SmartMeterToInfluxDb.Tests/SmartMeterToInfluxDb.Tests.csproj --configuration Release --no-restore
+              dotnet test SmartMeterToInfluxDb.Tests/SmartMeterToInfluxDb.Tests.csproj \
+                --configuration Release \
+                --no-build \
+                --logger "trx;LogFileName=test-results.trx" \
+                --results-directory ./TestResults
+            '
 
       - name: Upload test results
         if: always()
