@@ -7,6 +7,10 @@ on:
     branches: [ master ]
   workflow_dispatch:
 
+permissions:
+  contents: read
+  checks: write
+
 jobs:
   build-and-test:
     name: Build & Test
@@ -16,15 +20,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # The project targets netcoreapp2.1, which no longer installs cleanly on
-      # current runner images. The matching SDK is only available as an old
-      # container image whose glibc is too old to run the Node runtime that
-      # GitHub's JavaScript actions (checkout, upload-artifact) now require.
-      # So the JS actions run on the host, and only the dotnet commands run
-      # inside the .NET Core 2.1 SDK container.
+      # The project targets netcoreapp2.1, whose SDK only ships as an old
+      # container image. That image's glibc is too old for the Node runtime
+      # GitHub's JavaScript actions (checkout, test-reporter, upload-artifact)
+      # now require, so those actions run on the host and only the dotnet
+      # commands run inside the container.
       #
-      # The .sln references docker-compose.dcproj, which the dotnet CLI cannot
-      # build on Linux, so the individual projects are built instead.
+      # `dotnet test` on the test project transitively restores and builds the
+      # referenced main project, so a single command covers restore + build +
+      # test. (The .sln references docker-compose.dcproj, which the dotnet CLI
+      # cannot build on Linux, so the solution itself is never built.)
       - name: Build & test (.NET Core 2.1 container)
         run: |
           docker run --rm \
@@ -34,18 +39,18 @@ jobs:
             -e DOTNET_SKIP_FIRST_TIME_EXPERIENCE=true \
             -e DOTNET_NOLOGO=true \
             mcr.microsoft.com/dotnet/core/sdk:2.1 \
-            bash -c '
-              set -euo pipefail
-              dotnet restore SmartMeterToInfluxDb/SmartMeterToInfluxDb.csproj
-              dotnet restore SmartMeterToInfluxDb.Tests/SmartMeterToInfluxDb.Tests.csproj
-              dotnet build SmartMeterToInfluxDb/SmartMeterToInfluxDb.csproj --configuration Release --no-restore
-              dotnet build SmartMeterToInfluxDb.Tests/SmartMeterToInfluxDb.Tests.csproj --configuration Release --no-restore
-              dotnet test SmartMeterToInfluxDb.Tests/SmartMeterToInfluxDb.Tests.csproj \
-                --configuration Release \
-                --no-build \
-                --logger "trx;LogFileName=test-results.trx" \
-                --results-directory ./TestResults
-            '
+            dotnet test SmartMeterToInfluxDb.Tests/SmartMeterToInfluxDb.Tests.csproj \
+              --configuration Release \
+              --logger "trx;LogFileName=test-results.trx" \
+              --results-directory ./TestResults
+
+      - name: Publish test report
+        uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          name: Test Report
+          path: '**/TestResults/*.trx'
+          reporter: dotnet-trx
 
       - name: Upload test results
         if: always()
