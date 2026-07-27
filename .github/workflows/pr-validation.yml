@@ -20,29 +20,21 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
 
-      # The project targets netcoreapp2.1, whose SDK only ships as an old
-      # container image. That image's glibc is too old for the Node runtime
-      # GitHub's JavaScript actions (checkout, test-reporter, upload-artifact)
-      # now require, so those actions run on the host and only the dotnet
-      # commands run inside the container.
-      #
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
       # `dotnet test` on the test project transitively restores and builds the
       # referenced main project, so a single command covers restore + build +
       # test. (The .sln references docker-compose.dcproj, which the dotnet CLI
       # cannot build on Linux, so the solution itself is never built.)
-      - name: Build & test (.NET Core 2.1 container)
+      - name: Build & test
         run: |
-          docker run --rm \
-            -v "${{ github.workspace }}":/src \
-            -w /src \
-            -e DOTNET_CLI_TELEMETRY_OPTOUT=true \
-            -e DOTNET_SKIP_FIRST_TIME_EXPERIENCE=true \
-            -e DOTNET_NOLOGO=true \
-            mcr.microsoft.com/dotnet/core/sdk:2.1 \
-            dotnet test SmartMeterToInfluxDb.Tests/SmartMeterToInfluxDb.Tests.csproj \
-              --configuration Release \
-              --logger "trx;LogFileName=test-results.trx" \
-              --results-directory ./TestResults
+          dotnet test SmartMeterToInfluxDb.Tests/SmartMeterToInfluxDb.Tests.csproj \
+            --configuration Release \
+            --logger "trx;LogFileName=test-results.trx" \
+            --results-directory ./TestResults
 
       - name: Publish test report
         uses: dorny/test-reporter@v1
