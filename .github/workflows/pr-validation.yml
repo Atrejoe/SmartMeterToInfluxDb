@@ -1,0 +1,55 @@
+name: PR Validation
+
+on:
+  pull_request:
+    branches: [ master ]
+  push:
+    branches: [ master ]
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    name: Build & Test
+    runs-on: ubuntu-latest
+    # The project targets netcoreapp2.1, which no longer installs cleanly on
+    # current runner images. Running inside the official .NET Core 2.1 SDK
+    # container gives a matching, reproducible toolchain.
+    container:
+      image: mcr.microsoft.com/dotnet/core/sdk:2.1
+
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: 'true'
+      DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 'true'
+      DOTNET_NOLOGO: 'true'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # The .sln references docker-compose.dcproj, which the dotnet CLI cannot
+      # build on Linux, so build the individual projects instead.
+      - name: Restore
+        run: |
+          dotnet restore SmartMeterToInfluxDb/SmartMeterToInfluxDb.csproj
+          dotnet restore SmartMeterToInfluxDb.Tests/SmartMeterToInfluxDb.Tests.csproj
+
+      - name: Build
+        run: |
+          dotnet build SmartMeterToInfluxDb/SmartMeterToInfluxDb.csproj --configuration Release --no-restore
+          dotnet build SmartMeterToInfluxDb.Tests/SmartMeterToInfluxDb.Tests.csproj --configuration Release --no-restore
+
+      - name: Test
+        run: >
+          dotnet test SmartMeterToInfluxDb.Tests/SmartMeterToInfluxDb.Tests.csproj
+          --configuration Release
+          --no-build
+          --logger "trx;LogFileName=test-results.trx"
+          --results-directory ./TestResults
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: '**/TestResults/*.trx'
+          if-no-files-found: ignore
