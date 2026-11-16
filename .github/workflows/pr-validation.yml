@@ -23,7 +23,7 @@ jobs:
       - name: Setup .NET 10
         uses: actions/setup-dotnet@v6
         with:
-          dotnet-version: '10.0.x'
+          dotnet-version: '11.0.x'
 
       # `dotnet test` on the test project transitively restores and builds the
       # referenced main project, so a single command covers restore + build +
